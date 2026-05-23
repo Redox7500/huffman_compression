@@ -13,15 +13,14 @@ public class Main
 {
     public static void main(String[] args)
     {
-        Huffman.test("input.txt", "compressed.bin", true);
+        Huffman.testEncodeDecodeFile(Paths.get("input.txt"), Paths.get("compressed.bin"), 2);
     }
 }
 
 class FileFunctions
 {
-    public static void writeBinary(String binary, String filepath)
+    public static void writeBinary(String binary, Path path)
     {
-        Path path = Paths.get(filepath);
         try
         {
             byte[] bytes = new byte[Math.ceilDiv(binary.length(), 8)];
@@ -39,9 +38,8 @@ class FileFunctions
         }
     }
 
-    public static String readBinary(String filepath)
+    public static String readBinary(Path path)
     {
-        Path path = Paths.get(filepath);
         try
         {
             byte[] bytes = Files.readAllBytes(path);
@@ -61,9 +59,8 @@ class FileFunctions
         }
     }
 
-    public static String readText(String filepath)
+    public static String readText(Path path)
     {
-        Path path = Paths.get(filepath);
         try
         {
             return Files.readString(path, StandardCharsets.UTF_8);
@@ -358,49 +355,52 @@ class Huffman
         }
     }
    
-    public static void test(String inputFilepath, String outputFilepath, boolean shouldLog)
+    public static void testEncodeDecodeFile(Path inputPath, Path outputPath, int logDetail)
     {
-        String text = FileFunctions.readText(inputFilepath);
-        if (shouldLog)
+        String text = FileFunctions.readText(inputPath);
+        if (logDetail >= 2)
         {
-            System.out.println("original text: " + text + "\nread from: " + inputFilepath + "\n");            
+            System.out.println("original text: " + text + "\nread from: " + inputPath + "\n");            
         }
 
         String encoded = encode(text);
-        if (shouldLog)
+        if (logDetail >= 2)
         {
             System.out.println("encoded text: " + encoded);
         }
        
-        FileFunctions.writeBinary(encoded, outputFilepath);
-        if (shouldLog)
+        FileFunctions.writeBinary(encoded, outputPath);
+        if (logDetail >= 2)
         {
-            System.out.println("wrote to: " + outputFilepath + "\n");
+            System.out.println("wrote to: " + outputPath + "\n");
         }
 
-        String binaryRead = FileFunctions.readBinary(outputFilepath);
-        if (shouldLog)
+        String binaryRead = FileFunctions.readBinary(outputPath);
+        if (logDetail >= 2)
         {
             System.out.println("binary read: " + binaryRead);
-            System.out.println("read from: " + outputFilepath + "\n");
+            System.out.println("read from: " + outputPath + "\n");
         }
 
         String decoded = decode(binaryRead);
-        if (shouldLog)
+        if (logDetail >= 2)
         {
             System.out.println("decoded: " + decoded + "\n");
         }
 
-        System.out.println(((text.equals(decoded))? "successful":"unsuccessful") + "\n");
+        if (logDetail >= 1)
+        {
+            System.out.println(((text.equals(decoded))? "successful":"unsuccessful") + "\n");
 
-        int naiveBitsUsed = text.getBytes(StandardCharsets.UTF_8).length * 8;
-        System.out.println("bits used with naive encoding: " + naiveBitsUsed);
-        System.out.println("bits used after compression: " + binaryRead.length());
-        System.out.println("bits saved: " + (naiveBitsUsed - binaryRead.length()));
+            int naiveBitsUsed = text.getBytes(StandardCharsets.UTF_8).length * 8;
+            System.out.println("bits used with naive encoding: " + naiveBitsUsed);
+            System.out.println("bits used after compression: " + binaryRead.length());
+            System.out.println("bits saved: " + (naiveBitsUsed - binaryRead.length()));
+        }
     }
    
-    public static void test(String inputFilepath, String outputFilepath)
+    public static void testEncodeDedcodeFile(Path inputPath, Path outputPath)
     {
-        test(inputFilepath, outputFilepath, false);
+        Huffman.testEncodeDecodeFile(inputPath, outputPath, 0);
     }
 }
