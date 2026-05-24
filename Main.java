@@ -214,8 +214,8 @@ class Huffman
             return "";
         }
 
-        List<Node> leaves = createLeaves(text);
-        Node rootNode = combineLeaves(leaves);
+        List<Node> leaves = Huffman.createLeaves(text);
+        Node rootNode = Huffman.combineLeaves(leaves);
         Map<Byte, String> encodings = rootNode.getEncodings();
    
         StringBuilder binary = new StringBuilder();
@@ -370,7 +370,7 @@ class Huffman
             System.out.println("original text: " + text + "\nread from: " + inputPath + "\n");            
         }
 
-        String encoded = encode(text);
+        String encoded = Huffman.encode(text);
         if (logDetail >= 2)
         {
             System.out.println("encoded text: " + encoded);
@@ -389,7 +389,7 @@ class Huffman
             System.out.println("read from: " + outputPath + "\n");
         }
 
-        String decoded = decode(binaryRead);
+        String decoded = Huffman.decode(binaryRead);
         if (logDetail >= 2)
         {
             System.out.println("decoded: " + decoded + "\n");
