@@ -17,39 +17,34 @@ public class Main
     }
 }
 
-class FileFunctions
+class FileIoHelper
 {
-    public static void writeBinary(String binary, Path path)
+    public static String bytesToBinary(byte[] bytes)
     {
-        try
+        StringBuilder binary = new StringBuilder();
+        for (byte b:bytes)
         {
-            byte[] bytes = new byte[Math.ceilDiv(binary.length(), 8)];
-            for (int i = 0; i < bytes.length; i++)
-            {
-                String substring = binary.substring(i * 8, Math.min(binary.length(), (i + 1) * 8));
-                bytes[i] = (byte)Integer.parseInt(String.format("%-8s", substring).replace(' ', '0'), 2);
-            }
+            binary.append(Integer.toBinaryString((b & 0xff) + 0x100).substring(1));
+        }
+        return binary.toString();
+    }
 
-            Files.write(path, bytes);
-        }
-        catch (IOException error)
+    public static byte[] binaryToBytes(String binary)
+    {
+        byte[] bytes = new byte[Math.ceilDiv(binary.length(), 8)];
+        for (int i = 0; i < bytes.length; i++)
         {
-            System.err.println("Error reading file at " + path.toAbsolutePath() + ": " + error.getMessage());
+            String substring = binary.substring(i * 8, Math.min(binary.length(), (i + 1) * 8));
+            bytes[i] = (byte)Integer.parseInt(String.format("%-8s", substring).replace(' ', '0'), 2);
         }
+        return bytes;
     }
 
     public static String readBinary(Path path)
     {
         try
         {
-            byte[] bytes = Files.readAllBytes(path);
-            StringBuilder binary = new StringBuilder();
-            for (byte b:bytes)
-            {
-                binary.append(Integer.toBinaryString((b & 0xff) + 0x100).substring(1));
-            }
-
-            return binary.toString();
+            return FileIoHelper.bytesToBinary(Files.readAllBytes(path));
         }
         catch (IOException error)
         {
@@ -70,6 +65,18 @@ class FileFunctions
             System.err.println("Error reading file at " + path.toAbsolutePath() + ": " + error.getMessage());
            
             return "";
+        }
+    }
+
+    public static void writeBinary(Path path, String binary)
+    {
+        try
+        {
+            Files.write(path, FileIoHelper.binaryToBytes(binary));
+        }
+        catch (IOException error)
+        {
+            System.err.println("Error writing to file at " + path.toAbsolutePath() + ": " + error.getMessage());
         }
     }
 }
@@ -357,7 +364,7 @@ class Huffman
    
     public static void testEncodeDecodeFile(Path inputPath, Path outputPath, int logDetail)
     {
-        String text = FileFunctions.readText(inputPath);
+        String text = FileIoHelper.readText(inputPath);
         if (logDetail >= 2)
         {
             System.out.println("original text: " + text + "\nread from: " + inputPath + "\n");            
@@ -369,13 +376,13 @@ class Huffman
             System.out.println("encoded text: " + encoded);
         }
        
-        FileFunctions.writeBinary(encoded, outputPath);
+        FileIoHelper.writeBinary(outputPath, encoded);
         if (logDetail >= 2)
         {
             System.out.println("wrote to: " + outputPath + "\n");
         }
 
-        String binaryRead = FileFunctions.readBinary(outputPath);
+        String binaryRead = FileIoHelper.readBinary(outputPath);
         if (logDetail >= 2)
         {
             System.out.println("binary read: " + binaryRead);
